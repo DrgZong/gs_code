@@ -1,0 +1,31 @@
+
+/**
+* 根据触发器调用方法名及对应文件的id删除触发器
+* trigger_function_name： 触发器调用方法名
+*/
+function deleteTrigger(trigger_function_name) {
+   var allTriggers = ScriptApp.getProjectTriggers();
+    for (var i = 0; i < allTriggers.length; i++) {
+         var m_trigger = allTriggers[i];
+      if (m_trigger.getHandlerFunction() == trigger_function_name && m_trigger.getTriggerSourceId() == SpreadsheetApp.getActiveSpreadsheet().getId()) {
+        ScriptApp.deleteTrigger(allTriggers[i]);
+        break;
+      }
+    }
+}
+
+/**
+* 删除定时任务触发器(文件新增通知触发器)
+*/
+function deleteTimeDrivenTriggers() {
+ var allTriggers = ScriptApp.getProjectTriggers();
+    for (var i = 0; i < allTriggers.length; i++) {
+      if (allTriggers[i].getHandlerFunction() == "driveActivityReport") {
+        ScriptApp.deleteTrigger(allTriggers[i]);
+        set_value('global_url','');
+        break;
+      }
+    }
+}
+
+

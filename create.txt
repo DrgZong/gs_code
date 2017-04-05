@@ -1,0 +1,51 @@
+
+/**
+* 创建编辑触发器并更新菜单
+*/
+function createSheetEditTrigger() {
+  deleteTrigger("onsEdit");
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  ScriptApp.newTrigger('onsEdit')
+      .forSpreadsheet(ss)
+      .onEdit()
+      .create();
+  update_menu(triggerIsWork(1));
+  is_need_show_prompt();
+  Browser.msgBox('编辑通知启用成功！');
+}
+
+/**
+* 创建打开触发器并更新菜单
+*/
+function createSheetOpenTrigger() {
+  deleteTrigger("onsOpen");
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  ScriptApp.newTrigger('onsOpen')
+      .forSpreadsheet(ss)
+      .onOpen()
+      .create();
+  update_menu(triggerIsWork(1));
+  is_need_show_prompt();
+  Browser.msgBox('打开通知启用成功！');
+}
+
+/**
+* 创建时间触发器并要求用户输入hook地址并更新菜单
+*/
+function createTimeDrivenTriggers() {
+  deleteTimeDrivenTriggers();
+   ScriptApp.newTrigger('driveActivityReport')
+           .timeBased()
+           .everyHours(1)
+           .create();
+  update_menu(triggerIsWork(1));
+  showPrompt('文件新增hook地址配置','请输入我方提供的hook地址,通知将在地址配置成功后生效:','global_url','配置取消','配置未完成');
+  Browser.msgBox('文件新增通知启用成功！');
+}
+
+/**
+* 单独创建时间触发器,不带提醒
+*/
+function createTimeTriggers() {
+ 
+}

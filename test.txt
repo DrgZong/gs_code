@@ -1,0 +1,13 @@
+function doPost(e) 
+   {
+     DriveApp.createFile(e.parameter.file.getBlob());
+     return ContentService.createTextOutput('ok!');
+   }
+
+function doGet(e) 
+   {
+//     var name = e.parameter.name;
+//     Logger.log(name);
+//     DriveApp.createFile(name, "test")
+  return ContentService.createTextOutput('ok!');
+   }

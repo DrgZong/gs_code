@@ -1,0 +1,48 @@
+/**
+* 自定义编辑触发器，每次触发后将更改相关数据存在项目数据存储器中(key=文档id+'_modify')，并获得当前存储(即更改)时间
+* 如果返回的是一个正确的时间，则线程休眠一分钟，线程重新运行时会获取当前存储器中最新修改时间，并与自己修改时间做对比
+* 如果两者相等(此次编辑完成后一分钟内无再次编辑)则发出微信通知并清空数据，否则此次触发器操作结束
+* 如果保存时返回的是false(当前存储器存储数据过长)，则发出微信通知，并清空数据，此次触发器操作完成
+*/
+
+function onsEdit(e) {
+  if(is_need_show_prompt()){
+    return;
+  }
+  var date = new Date();
+  var payload = {
+    "date": date.getFullYear()+"/"+(date.getMonth()+1)+"/"+date.getDate()+" "+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds(),
+    "sheet": e.source.getActiveSheet().getName(),
+    "user": Session.getActiveUser().getEmail(),
+    "start_column": e.range.getColumn(),
+    "start_row": e.range.getRow(),
+    "end_column": e.range.getLastColumn(),
+    "end_row": e.range.getLastRow(),
+    "old_data": e.oldValue,
+    "new_data": e.value
+  };
+  var old_time = queue_add(payload);
+  if(old_time){
+    Utilities.sleep(1000*60);
+    var new_time = queue_get_time();
+    if(new_time == old_time || new_time - old_time > 60*1000){
+      sendToSlackAndClearCache(e);
+    }
+  }else{
+    sendToSlackAndClearCache(e);
+  }
+}
+
+function sendToSlackAndClearCache(e) {
+    var url = get_value(SpreadsheetApp.getActive().getId());
+    var payload = {
+    "url":"https://docs.google.com/spreadsheets/d/"+SpreadsheetApp.getActive().getId()+"/edit",
+    "type" : "sheet",
+    "event": "Edit",
+    "document" : e.source.getName(), 
+    "sheet": e.source.getActiveSheet().getName(),
+    "data": queue_get()
+  };
+    sendToSlack_(url, payload);
+    queue_clear();
+}

@@ -1,0 +1,120 @@
+/**
+* 微信发送接口
+*/
+function sendToSlack_(url, payload) {
+   var options =  {
+    "method" : "post",
+    "contentType" : "application/json",
+    "payload" : JSON.stringify(payload)
+  };
+  return UrlFetchApp.fetch(url, options);
+}
+
+/**
+* 前端弹窗设置
+* title: 标题
+* info : 显示信息
+* key  : 存储用户填写信息的key
+* cancle_info: 点击取消后显示信息
+* close_info: 点击关闭后显示信息
+*/
+function showPrompt(title,info,key,cancle_info,close_info) {
+  var ui = SpreadsheetApp.getUi();
+  var result = ui.prompt(
+      title,
+      info,
+      ui.ButtonSet.OK_CANCEL);
+  var button = result.getSelectedButton();
+  var text = result.getResponseText();
+  if (button == ui.Button.OK) {
+    set_value(key,text);
+  } else if (button == ui.Button.CANCEL) {
+    ui.alert(cancle_info);
+  } else if (button == ui.Button.CLOSE) {
+    ui.alert(close_info);
+  }
+}
+
+/**
+* 设置hook地址，存储时key=文档id
+*/
+function setUrl() {
+   var key = SpreadsheetApp.getActive().getId();
+   var url = get_value(key);
+   var show_info = '请输入我方提供的hook地址,通知将在地址配置成功后生效:';
+   if(url != undefined){
+     show_info = show_info + '\n原地址：\n' + url;
+   }
+   showPrompt('hook地址配置',show_info,key,'配置取消','配置未完成');
+}
+
+/**
+* 判断是否需要显示弹窗，如果用户设置了某触发器，但没有设置hook地址，则弹窗告知用户设置地址
+*/
+function is_need_show_prompt() {
+  var is_need = false;
+  var url = get_value(SpreadsheetApp.getActive().getId());
+  if(url == undefined){
+    is_need = true;
+    setUrl();
+  }
+  return is_need;
+}
+
+/**
+* 根据key获取项目存储器的值
+*/
+function get_value(key) {
+  var scriptProperties = PropertiesService.getScriptProperties();
+  var data = scriptProperties.getProperties();
+  return data[key];
+}
+
+/**
+* 根据key设置项目存储器相应的值
+*/
+function set_value(key,value) {
+  var scriptProperties = PropertiesService.getScriptProperties();
+  scriptProperties.setProperty(key,value);
+}
+
+/**
+* 清除项目存储器中某个key的值
+*/
+
+function clear_value(key) {
+  var scriptProperties = PropertiesService.getScriptProperties();
+  scriptProperties.deleteProperty(key);
+}
+
+/**
+* 检测现有的已安装的触发器
+* not_on_menu： 是否需要更新菜单，如果未传值(undefined),则更新，否则返回相应的工作值(见Code.update_menu)
+*/
+
+function triggerIsWork(not_on_menu) {
+  if(Session.getActiveUser().getEmail() != SpreadsheetApp.getActiveSpreadsheet().getOwner().getEmail()){
+    update_menu(SpreadsheetApp.getActiveSpreadsheet().getOwner().getEmail());
+    return
+    }
+ var allTriggers = ScriptApp.getProjectTriggers();
+  var result = 0;
+    for (var i = 0; i < allTriggers.length; i++) {
+       var m_trigger = allTriggers[i];
+      if (m_trigger.getHandlerFunction() == "onsEdit" && m_trigger.getTriggerSourceId() == SpreadsheetApp.getActiveSpreadsheet().getId()) {
+        result = result+2;
+      }
+      if (m_trigger.getHandlerFunction() == "onsOpen" && m_trigger.getTriggerSourceId() == SpreadsheetApp.getActiveSpreadsheet().getId()) {
+        result = result+1;
+      }
+      if (m_trigger.getHandlerFunction() == "driveActivityReport") {
+        result = result+4;
+      }
+    }
+  if(not_on_menu == undefined){
+    update_menu(result);
+  }
+  return result;
+}
+
+

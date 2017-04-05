@@ -1,0 +1,67 @@
+/**
+* 编辑触发器触发时，将更改信息及时间存储到项目存储器中，更改key=文档id+'_edit'，时间key=文档id+'_modify'
+* value： 文档更改信息
+* return: 如果当前存储器存储信息过长则返回false告知触发器需要推送消息并清空存储值，
+*         否则返回当前修改时间
+*/
+function queue_add(value) {
+  var key = SpreadsheetApp.getActive().getId()+"_edit";
+  var time_key = SpreadsheetApp.getActive().getId()+"_modify"
+  var data = get_value(key);
+  if(data == undefined){
+    data = "";
+  }
+  data = data + JSON.stringify(value) + "&";
+  set_value(key, data);
+  var current_time = new Date().getTime();
+  set_value(time_key, current_time);
+  if(data.length >= 2500){
+    return false;
+  }
+  return current_time;
+}
+
+/**
+* 返回当前存储器存储的更改信息数组key=文档id+'_edit'
+*/
+function queue_get() {
+  var key = SpreadsheetApp.getActive().getId()+"_edit";
+  var data = get_value(key);
+  if(data == undefined){
+    data = "";
+  }
+  var result = str_array(data)
+  for (i in result){
+    result[i] = JSON.parse(result[i])
+      }
+  return result;
+}
+
+/**
+* 获取存储器中当前文档的最新修改时间key=文档id+'_modify'
+*/
+function queue_get_time() {
+  var time_key = SpreadsheetApp.getActive().getId()+"_modify"
+  var data = get_value(time_key);
+  if(data == undefined){
+    data = 0;
+  }
+  return data;
+}
+
+/**
+* 清空当前文档在存储器中的更改信息
+*/
+function queue_clear() {
+  var key = SpreadsheetApp.getActive().getId()+"_edit";
+  clear_value(key);
+}
+
+/**
+* 将存储的字符串信息转换成数组加json
+*/
+function str_array(data) {
+  return data.split("&").slice(0, -1);
+}
+
+

@@ -1,0 +1,111 @@
+/*
+who_work 参数值：
+字符串 无权限
+-1 初始化
+ 0 无
+ 1 打开
+ 2 编辑
+ 3 打开和编辑
+*/ 
+
+//安装时调用此方法，添加菜单
+function onInstall(e) {
+  onOpen(e)
+}
+
+//空方法，无权限时调用此方法
+function no_use(e) {
+}
+
+//系统打开方法，没有设置自定义打开触发器时使用此方法设置菜单
+function onOpen(e) {
+ update_menu(-1);
+}
+
+//停用打开通知触发器方法，停止后更新菜单
+function stopSheetOpenTrigger() {
+ var who_work = triggerIsWork(1);
+ deleteTrigger("onsOpen");
+ update_menu(who_work-1);
+ Browser.msgBox('停用打开通知成功！');
+}
+
+//停用编辑通知触发器方法，停止后更新菜单
+function stopSheetEditTrigger() {
+ var who_work = triggerIsWork(1);
+ deleteTrigger("onsEdit");
+ update_menu(who_work-2);
+ Browser.msgBox('停用编辑通知成功！');
+}
+
+//停用时间触发器(新增文件通知)方法，停止后更新菜单
+function stopTimeTrigger() {
+ var who_work = triggerIsWork(1);
+  deleteTimeDrivenTriggers();
+ update_menu(who_work-4);
+ Browser.msgBox('停用文件新增通知成功！');
+}
+
+/**
+* 更新菜单方法
+* who_work 参数值：
+*       字符串 无权限
+*       -1 初始化
+*        0 无
+*        1 打开
+*        2 编辑
+*        3 打开和编辑
+* 
+*/
+function update_menu(who_work) {
+  var ui = SpreadsheetApp.getUi();
+  var menu = ui.createMenu('通知插件菜单')
+  if(who_work == -1){
+    menu.addItem('检查通知是否启用', 'triggerIsWork');
+  }else if(who_work == 0){
+    menu.addItem('启用编辑通知', 'createSheetEditTrigger')
+        .addItem('启用打开通知', 'createSheetOpenTrigger')
+        .addItem('启用文件新增通知', 'createTimeDrivenTriggers')
+        .addItem('hook配置', 'setUrl');
+  }else if(who_work == 1){
+     menu.addItem('启用编辑通知', 'createSheetEditTrigger')
+         .addItem('停用打开通知', 'stopSheetOpenTrigger')
+         .addItem('启用文件新增通知', 'createTimeDrivenTriggers')
+         .addItem('hook配置', 'setUrl');
+  }else if(who_work == 2){
+    menu.addItem('停用编辑通知', 'stopSheetEditTrigger')
+        .addItem('启用打开通知', 'createSheetOpenTrigger')
+        .addItem('启用文件新增通知', 'createTimeDrivenTriggers')
+        .addItem('hook配置', 'setUrl');
+  }else if(who_work == 3){
+     menu.addItem('停用编辑通知', 'stopSheetEditTrigger')
+         .addItem('停用打开通知', 'stopSheetOpenTrigger')
+         .addItem('启用文件新增通知', 'createTimeDrivenTriggers')
+         .addItem('hook配置', 'setUrl');
+  }else if(who_work == 4){
+     menu.addItem('启用编辑通知', 'createSheetEditTrigger')
+         .addItem('启用打开通知', 'createSheetOpenTrigger')
+         .addItem('停用文件新增通知', 'stopTimeTrigger')
+         .addItem('hook配置', 'setUrl');
+  }else if(who_work == 5){
+     menu.addItem('启用编辑通知', 'createSheetEditTrigger')
+         .addItem('停用打开通知', 'stopSheetOpenTrigger')
+         .addItem('停用文件新增通知', 'stopTimeTrigger')
+         .addItem('hook配置', 'setUrl');
+  }else if(who_work == 6){
+     menu.addItem('停用编辑通知', 'stopSheetEditTrigger')
+         .addItem('启用打开通知', 'createSheetOpenTrigger')
+         .addItem('停用文件新增通知', 'stopTimeTrigger')
+         .addItem('hook配置', 'setUrl');
+  }else if(who_work == 7){
+     menu.addItem('停用编辑通知', 'stopSheetEditTrigger')
+         .addItem('停用打开通知', 'stopSheetOpenTrigger')
+         .addItem('停用文件新增通知', 'stopTimeTrigger')
+         .addItem('hook配置', 'setUrl');
+  }else{
+     menu.addItem('您无权设置此插件，请联系:'+who_work, 'no_use');
+  }
+  menu.addToUi();
+}
+
+

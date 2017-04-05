@@ -1,0 +1,37 @@
+/**
+* 自定义时间触发器，每隔一小时检测一下当前用户Drive中是否有新增文件，有则推送到微信群
+* 该推送针对用户级别(打开和编辑针对文件),故需要设置单独通知接口
+*/
+function driveActivityReport() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet(); 
+  var sheet = ss.getActiveSheet();
+  var timezone = ss.getSpreadsheetTimeZone();
+  var today     = new Date();
+  var fiveMinsAgo = new Date(today.getTime() - 60 * 60 * 1000);  
+  var startTime = fiveMinsAgo.toISOString();
+  var search = '(trashed = true or trashed = false) and (modifiedDate > "' + startTime + '")';
+  var files  = DriveApp.searchFiles(search);
+  var newFiles = new Array();
+  var isAdd = false;
+  while( files.hasNext() ) {
+     var file = files.next();
+     if(file.getDateCreated() > fiveMinsAgo){
+       isAdd = true;
+       newFiles.push({"created_time": Utilities.formatDate(file.getDateCreated(), timezone, "yyyy-MM-dd HH:mm:ss"),
+                      "file_name": file.getName(),
+                      "file_url": file.getUrl(),
+                      "owner": file.getOwner().getEmail(),
+                      "wp_owner": Session.getActiveUser().getEmail(),
+                      "size": file.getSize()
+                     });
+    }    
+  }
+  
+  if(isAdd){
+    var payload = {
+    "event": "Add",
+    "data": newFiles
+  };
+  sendToSlack_(get_value('global_url'), payload)
+  }
+}
