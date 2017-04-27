@@ -2,7 +2,7 @@
 * 一些配置信息，防止重名(以下id皆代表文档id)
 * id(文档id): 存储打开及编辑的hook地址
 * global   : 存储文件新增的hook地址
-* id_edit: 存储编辑的更改信息
+* id_edit: 存储编辑的更改信息.
 * id_modify: 存储最新的编辑时间
 */
 var con={
