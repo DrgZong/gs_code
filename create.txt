@@ -1,6 +1,6 @@
 
 /**
-* 创建编辑触发器并更新菜单
+* 创建编辑触发器并更新菜单,
 */
 function createSheetEditTrigger() {
   deleteTrigger("onsEdit");
